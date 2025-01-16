@@ -57,7 +57,7 @@ function updatePositions() {
     });
 }
 
-// Логіка переміщення космонавта
+// Логіка переміщення космонавта (на комп'ютері)
 document.addEventListener("keydown", function(e) {
     if (e.key === "ArrowLeft") {
         astronautPos.left -= 20;
@@ -71,6 +71,30 @@ document.addEventListener("keydown", function(e) {
     if (astronautPos.left > gameWidth - 50) astronautPos.left = gameWidth - 50;
 
     updatePositions();
+});
+
+// Логіка для керування через сенсорні події (на мобільних пристроях)
+let startX = 0;
+
+gameArea.addEventListener("touchstart", function(e) {
+    // Зберігаємо початкову позицію дотику
+    startX = e.touches[0].clientX;
+});
+
+gameArea.addEventListener("touchmove", function(e) {
+    // Переміщаємо космонавта залежно від зміщення пальця
+    const deltaX = e.touches[0].clientX - startX;
+    astronautPos.left += deltaX;
+
+    // Обмежуємо рух по екрану
+    if (astronautPos.left < 0) astronautPos.left = 0;
+    if (astronautPos.left > gameWidth - 50) astronautPos.left = gameWidth - 50;
+
+    // Оновлюємо позиції
+    updatePositions();
+
+    // Оновлюємо стартову позицію для обчислення зміщення
+    startX = e.touches[0].clientX;
 });
 
 // Логіка оновлення гри (мегабіти та астероїди падають)

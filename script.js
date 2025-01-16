@@ -17,18 +17,38 @@ let bitPos = { left: Math.random() * (gameWidth - 50), top: -50 };
 // Масив для астероїдів
 let asteroids = [];
 
-// Точний розмір астероїда
+// Точний розмір астероїда (всі астероїди однакові)
 const asteroidWidth = 50;
 const asteroidHeight = 50;
 
 // Функція для створення астероїда
 function createAsteroid() {
+    let left = Math.random() * (gameWidth - asteroidWidth);
+    let top = -Math.random() * 150;  // Різна початкова висота
+
+    // Перевірка на зіткнення з іншими астероїдами
+    for (let i = 0; i < asteroids.length; i++) {
+        let asteroid = asteroids[i];
+        if (isCollision(left, top, asteroidWidth, asteroidHeight, asteroid.left, asteroid.top, asteroid.width, asteroid.height)) {
+            // Якщо є зіткнення, пробуємо знову створити астероїд
+            return createAsteroid();
+        }
+    }
+
     let asteroid = {
-        left: Math.random() * (gameWidth - asteroidWidth),
-        top: -Math.random() * 150,  // Різна початкова висота
-        id: "asteroid" + Math.random() // Унікальний ID для кожного астероїда
+        left: left,
+        top: top,
+        width: asteroidWidth,
+        height: asteroidHeight,
+        id: "asteroid" + Math.random(), // Унікальний ID для кожного астероїда
     };
+    
     asteroids.push(asteroid);
+}
+
+// Функція для перевірки колізії між астероїдами
+function isCollision(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
 }
 
 // Оновлення позицій елементів
@@ -49,6 +69,8 @@ function updatePositions() {
             asteroidElem.classList.add("asteroid");
             asteroidElem.style.backgroundImage = "url('ast.png')";
             asteroidElem.style.backgroundSize = "cover";
+            asteroidElem.style.width = asteroid.width + "px";
+            asteroidElem.style.height = asteroid.height + "px";
             gameArea.appendChild(asteroidElem);
         }
 
@@ -57,7 +79,7 @@ function updatePositions() {
     });
 }
 
-// Логіка переміщення космонавта (на комп'ютері)
+// Логіка переміщення космонавта
 document.addEventListener("keydown", function(e) {
     if (e.key === "ArrowLeft") {
         astronautPos.left -= 20;
@@ -71,30 +93,6 @@ document.addEventListener("keydown", function(e) {
     if (astronautPos.left > gameWidth - 50) astronautPos.left = gameWidth - 50;
 
     updatePositions();
-});
-
-// Логіка для керування через сенсорні події (на мобільних пристроях)
-let startX = 0;
-
-gameArea.addEventListener("touchstart", function(e) {
-    // Зберігаємо початкову позицію дотику
-    startX = e.touches[0].clientX;
-});
-
-gameArea.addEventListener("touchmove", function(e) {
-    // Переміщаємо космонавта залежно від зміщення пальця
-    const deltaX = e.touches[0].clientX - startX;
-    astronautPos.left += deltaX;
-
-    // Обмежуємо рух по екрану
-    if (astronautPos.left < 0) astronautPos.left = 0;
-    if (astronautPos.left > gameWidth - 50) astronautPos.left = gameWidth - 50;
-
-    // Оновлюємо позиції
-    updatePositions();
-
-    // Оновлюємо стартову позицію для обчислення зміщення
-    startX = e.touches[0].clientX;
 });
 
 // Логіка оновлення гри (мегабіти та астероїди падають)
@@ -143,18 +141,19 @@ function gameLoop() {
 
 // Функція для перевірки колізії між космонавтом і астероїдом
 function checkCollision(asteroid) {
-    // Отримуємо точні розміри астероїда та космонавта
-    const asteroidElem = document.getElementById(asteroid.id);
-    const astronautRect = astronaut.getBoundingClientRect();
-    const asteroidRect = asteroidElem.getBoundingClientRect();
-
-    // Перевіряємо, чи є перекриття між прямокутниками космонавта і астероїда
     return (
-        astronautRect.left < asteroidRect.right &&
-        astronautRect.right > asteroidRect.left &&
-        astronautRect.top < asteroidRect.bottom &&
-        astronautRect.bottom > asteroidRect.top
+        asteroid.top + asteroid.height >= gameHeight - astronautPos.bottom &&
+        asteroid.left + asteroid.width >= astronautPos.left &&
+        asteroid.left <= astronautPos.left + 50
     );
+}
+
+// Функція для скидання гри
+function resetGame() {
+    score = 0;
+    scoreDisplay.textContent = "Очки: 0";
+    asteroids = [];  // Очищаємо астероїди
+    document.querySelectorAll('.asteroid').forEach(asteroidElem => asteroidElem.remove());
 }
 
 // Функція для генерації астероїдів
@@ -164,14 +163,6 @@ function generateAsteroids() {
     for (let i = 0; i < numAsteroids; i++) {
         createAsteroid();  // Створюємо астероїд
     }
-}
-
-// Функція для скидання гри
-function resetGame() {
-    score = 0;
-    scoreDisplay.textContent = "Очки: 0";
-    asteroids = [];  // Очищаємо астероїди
-    document.querySelectorAll('.asteroid').forEach(asteroidElem => asteroidElem.remove());
 }
 
 // Викликаємо оновлення гри кожні 50 мс

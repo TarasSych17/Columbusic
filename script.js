@@ -17,10 +17,14 @@ let bitPos = { left: Math.random() * (gameWidth - 50), top: -50 };
 // Масив для астероїдів
 let asteroids = [];
 
+// Точний розмір астероїда
+const asteroidWidth = 50;
+const asteroidHeight = 50;
+
 // Функція для створення астероїда
 function createAsteroid() {
     let asteroid = {
-        left: Math.random() * (gameWidth - 50),
+        left: Math.random() * (gameWidth - asteroidWidth),
         top: -Math.random() * 150,  // Різна початкова висота
         id: "asteroid" + Math.random() // Унікальний ID для кожного астероїда
     };
@@ -75,19 +79,14 @@ function gameLoop() {
 
     // Оновлюємо позиції астероїдів
     asteroids.forEach((asteroid, index) => {
-        asteroid.top += 4;
+        asteroid.top += 4 + Math.floor(score / 50);  // Швидкість астероїдів залежить від очок
 
         // Перевірка на зіткнення з астероїдами
         if (
-            asteroid.top + 50 >= gameHeight - astronautPos.bottom &&
-            asteroid.left + 50 >= astronautPos.left &&
-            asteroid.left <= astronautPos.left + 50
+            checkCollision(asteroid) // Функція перевірки колізії
         ) {
             alert("Гра завершена! Ви набрали " + score + " очок.");
-            score = 0;
-            scoreDisplay.textContent = "Очки: 0";
-            asteroids = [];  // Очищаємо астероїди
-            document.querySelectorAll('.asteroid').forEach(asteroidElem => asteroidElem.remove());
+            resetGame();
         }
 
         // Якщо астероїд вийшов за межі екрану, видаляємо його
@@ -118,13 +117,37 @@ function gameLoop() {
     updatePositions();
 }
 
-// Функція для генерування від 2 до 5 астероїдів
+// Функція для перевірки колізії між космонавтом і астероїдом
+function checkCollision(asteroid) {
+    // Отримуємо точні розміри астероїда та космонавта
+    const asteroidElem = document.getElementById(asteroid.id);
+    const astronautRect = astronaut.getBoundingClientRect();
+    const asteroidRect = asteroidElem.getBoundingClientRect();
+
+    // Перевіряємо, чи є перекриття між прямокутниками космонавта і астероїда
+    return (
+        astronautRect.left < asteroidRect.right &&
+        astronautRect.right > asteroidRect.left &&
+        astronautRect.top < asteroidRect.bottom &&
+        astronautRect.bottom > asteroidRect.top
+    );
+}
+
+// Функція для генерації астероїдів
 function generateAsteroids() {
     let numAsteroids = Math.floor(Math.random() * 4) + 2; // Генеруємо від 2 до 5 астероїдів
 
     for (let i = 0; i < numAsteroids; i++) {
         createAsteroid();  // Створюємо астероїд
     }
+}
+
+// Функція для скидання гри
+function resetGame() {
+    score = 0;
+    scoreDisplay.textContent = "Очки: 0";
+    asteroids = [];  // Очищаємо астероїди
+    document.querySelectorAll('.asteroid').forEach(asteroidElem => asteroidElem.remove());
 }
 
 // Викликаємо оновлення гри кожні 50 мс

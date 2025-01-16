@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Гра: Космонавтик ловить мегабіти</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">Очки: 0</div>
+        <div id="game-area">
+            <div id="astronaut"></div> <!-- Космонавт -->
+            <div id="bit"></div> <!-- Мегабіт -->
+        </div>
+
+        <!-- Кнопка для включення/выключення музыки -->
+        <button id="music-toggle" class="music-toggle-btn">Увімкнути музику</button>
+    </div>
+
+    <!-- Фонова музика -->
+    <audio id="background-music" loop>
+        <source src="fon.mp3" type="audio/mp3">
+        Ваш браузер не підтримує аудіо.
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
